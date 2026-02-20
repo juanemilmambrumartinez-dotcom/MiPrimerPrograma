@@ -1,1 +1,24 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+Console.WriteLine("==========Let's see if the number is even or odd!==========");
+Console.WriteLine("=========================================================== ");
+Console.WriteLine("Digit any number: ");
 
+int num = Convert.ToInt32(Console.ReadLine());
+if (num % 2 == 0)
+{
+    Console.WriteLine("This number is even");
+    }
+    else
+    {
+        Console.WriteLine("This number is odd");
+        }
+
+
+        Console.WriteLine("=========================================================== ");
+
+
+
+
+
+
+        Console.ReadKey();
