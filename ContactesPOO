@@ -1,0 +1,187 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+class Contactes
+{
+     string name, lastname, addresse, email;
+     int ids;
+     long phone;
+
+    public Contactes(string name, string lastname, string addresse, string email,
+                    int ids, long phone)
+    {
+        this.name = name;
+        this.lastname = lastname;
+        this.addresse = addresse;
+        this.email = email;
+        this.ids = ids;
+        this.phone = phone;
+    }
+
+    public void contactesInfo()
+    {
+        Console.WriteLine("----------CONTACTO----------");
+        Console.WriteLine($"ids: {ids}\n" +
+        $"Nombre: {name}\n" +
+        $"Apellido: {lastname}\n" +
+        $"Telefono: {phone}\n" +
+        $"Direccion: {addresse}\n" +
+        $"Correo: {email}\n");
+        Console.WriteLine("-----------------------------");
+        
+    }
+
+    static void Main()
+    {
+       
+      List<Contactes> contact = new List<Contactes>();
+
+      bool running = true;
+        while (running)
+        {
+            Console.Write("1. Agregar Contacto      ");
+            Console.Write("2. Ver Contactos     ");
+            Console.Write("3. Buscar Contactos      ");
+            Console.Write("4. Modificar Contacto        ");
+            Console.Write("5. Eliminar Contacto     ");
+            Console.WriteLine("6. Salir");
+
+            Console.WriteLine("Digite el numero de la opcion que desea: ");
+            int option = Convert.ToInt32(Console.ReadLine());
+
+            switch (option)
+            {
+                case 1:
+
+                    Console.Write("ID: ");
+                    int id = Convert.ToInt32(Console.ReadLine());
+
+                    Console.Write("Nombre: ");
+                    string name = Console.ReadLine();
+
+                    Console.Write("Apellido: ");
+                    string lastname = Console.ReadLine();
+
+                    Console.Write("Direccion: ");
+                    string address = Console.ReadLine();
+
+                    Console.Write("Telefono: ");
+                    long phone = Convert.ToInt64(Console.ReadLine());
+
+                    Console.Write("Email: ");
+                    string email = Console.ReadLine();
+
+                   
+
+                    Contactes c1 = new Contactes(name, lastname, address, email, id, phone);
+
+                    contact.Add(c1);
+
+        
+
+                    break;
+
+                    case 2:
+
+                    foreach (Contactes j in contact)
+                    {
+                        j.contactesInfo();
+                    }
+                    break;
+
+                    case 3:
+                    
+                    Console.WriteLine("Escriba el nombre del contacto que busca... ");
+                    string name1 = Console.ReadLine();
+
+                    foreach(Contactes j in contact)
+                    {
+                        if(j.name == name1)
+                        {
+                            j.contactesInfo();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Este contacto no existe en su agenda");
+                        }
+                        
+                    }
+                    break;
+                    
+                    case 4:
+
+                    Console.WriteLine("Digite el id del contacto que quiere modificar...");
+                    int numb2 = Convert.ToInt32(Console.ReadLine());
+
+                    foreach(Contactes j in contact)
+                    {
+                        
+
+                    if (j.ids == numb2)
+                    {
+                        Console.Write(" NUEVO ID: ");
+                        j.ids = Convert.ToInt32(Console.ReadLine());
+
+                        Console.Write("NUEVO Nombre: ");
+                        j.name = Console.ReadLine();
+
+                         Console.Write("NUEVO Apellido: ");
+                        j.lastname= Console.ReadLine();
+
+                        Console.Write("NUEVO Direccion: ");
+                        j.addresse = Console.ReadLine();
+
+                        Console.Write("NUEVO Telefono: ");
+                        j.phone = Convert.ToInt64(Console.ReadLine());
+
+                        Console.Write("NUEVO Email: ");
+                        j.email = Console.ReadLine();
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("Este ID no esta ");
+                    }
+
+                    }
+                    break;
+
+                    case 5:
+
+                    Console.WriteLine("Escriba el ID del contacto que desea eliminar...");
+                    int nu = Convert.ToInt32(Console.ReadLine());
+
+                    Contactes deleted = null;
+
+                    foreach(Contactes j in contact)
+                    {
+                        if(j.ids == nu)
+                        {
+                            deleted = j;
+                        }
+                    }
+                        if(deleted != null)
+                        {
+                            contact.Remove(deleted);
+                            Console.WriteLine("Contacto eliminado exitosamente");
+                        }
+                       
+                    
+                    break;
+
+                    case 6:
+                    
+                    running = false;
+                    break;
+
+                    default:
+                    Console.WriteLine("ESTO DEBE FUNCIONAR");
+                    break;  
+
+            }
+            
+        }
+
+        Console.ReadKey();
+        
+    }
+
+}
