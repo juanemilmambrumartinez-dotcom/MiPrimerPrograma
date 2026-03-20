@@ -1,0 +1,178 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+class patient
+{
+    string FullName, Birthday, Sex, DrugName, Dose, frequency, Reasonforvisit, Reportedsymptoms, Doctorobservations,
+    Previousillnesses, Allergies, Immunizations;
+    long PhoneNumber , ID;
+
+    public patient(string FullName, string Birthday, string Sex, string DrugName, string Dose, string frequency, 
+    string Reasonforvisit, string Reportedsymptoms, string Doctorobservations,
+    string Previousillnesses, string Allergies, string Immunizations, long PhoneNumber, long ID)
+    {
+        this.ID = ID;
+        this.FullName = FullName;
+        this.Birthday = Birthday;
+        this.Sex = Sex;
+        this.DrugName = DrugName;
+        this.Dose = Dose;
+        this.frequency = frequency;
+        this.Reasonforvisit = Reasonforvisit;
+        this.Reportedsymptoms = Reportedsymptoms;
+        this.Doctorobservations = Doctorobservations;
+        this.Previousillnesses = Previousillnesses;
+        this.Allergies = Allergies;
+        this.Immunizations = Immunizations;
+        this.PhoneNumber = PhoneNumber;
+        
+    }
+
+    public void patientinfo()
+    {
+        Console.WriteLine("==========Patient==========");
+        Console.WriteLine($"FullName: {FullName}\n" +
+        $"Birthday: {Birthday}\n" +
+        $"Sex: {Sex}\n" +
+        $"PhoneNumber: {PhoneNumber}\n" +
+        $"ID: {ID}\n" + 
+        $"==========Medication==========\n" + 
+        $"DrugName: {DrugName}\n" +
+        $"Dose: {Dose}\n" +
+        $"frequency: {frequency}\n" +
+        $"==========Diagnostic==========\n" +
+        $"Reasonforvisit: {Reasonforvisit}\n" +
+        $"Reportedsymptoms: {Reportedsymptoms}\n" +
+        $"Doctorobservations: {Doctorobservations}\n" +
+        $"==========MedicalRecord==========\n" +
+        $"Previousillnesses: {Previousillnesses}\n" +
+        $"Allergies: {Allergies}\n" +
+        $"Immunizations: {Immunizations}\n");
+        Console.WriteLine("============================");
+    }
+
+    static void Main()
+    {
+        List<patient> p1 = new List<patient>();
+        
+        bool running = true;
+        while (running)
+        {
+            
+        Console.Write("1. Add patient      ");
+        Console.Write("2. See patient     ");
+        Console.Write("3. search patient      ");
+        Console.Write("4. Delete patient     ");
+        Console.WriteLine("5. exit");
+
+        Console.WriteLine("Choose an option by number... ");
+        int num = Convert.ToInt32(Console.ReadLine());
+
+        switch (num)
+        {
+            case 1:
+
+            Console.Write("ID: ");
+            long id = Convert.ToInt64(Console.ReadLine());
+            Console.Write("Fullnmae: ");
+            string name = Console.ReadLine();
+            Console.Write("Birthtady: ");
+            string birth = Console.ReadLine();
+            Console.Write("Sex: ");
+            string sex = Console.ReadLine();
+            Console.Write("Phone: ");
+            long phone = Convert.ToInt64(Console.ReadLine());
+            Console.Write("DrugName: ");
+            string a = Console.ReadLine();
+            Console.Write("Dose: ");
+            string b = Console.ReadLine();
+            Console.Write("frequency: ");
+            string c = Console.ReadLine();
+            Console.Write("Reason for visit: ");
+            string visit = Console.ReadLine();
+            Console.Write("Reported symptoms: ");
+            string report = Console.ReadLine();
+            Console.Write("Doctoro bservations: ");
+            string obser = Console.ReadLine();
+            Console.Write("Previous illnesses: ");
+            string ill = Console.ReadLine();
+            Console.Write("Allergies: ");
+            string allerg = Console.ReadLine();
+            Console.Write("Immunizations: ");
+            string vacu = Console.ReadLine();
+
+            patient pati = new patient( name, birth, sex, a, b, c, visit, report, obser, ill, allerg, vacu, phone, id);
+
+            p1.Add(pati);
+
+            break;
+
+            case 2:
+            
+            foreach(patient p in p1)
+            {
+                p.patientinfo();
+            }
+
+            break;
+            
+            case 3:
+
+            Console.WriteLine("Enter the name that you are looking for... ");
+            string name2 = Console.ReadLine();
+
+             foreach(patient p in p1)
+            {
+                if(p.FullName == name2)
+                {
+                p.patientinfo();
+                }
+                else
+                {
+                Console.WriteLine("...");
+                }
+                        
+            }
+
+            break;
+
+            case 4:
+            Console.WriteLine("Enter the id that you want to deletd... ");
+            int nu1 = Convert.ToInt32(Console.ReadLine());
+
+            patient deleted = null;
+
+            foreach(patient p in p1)
+            {
+                if(p.ID == nu1)
+                {
+                    deleted = p;
+                }
+            }
+                if(deleted != null)
+                {
+                p1.Remove(deleted);
+                Console.WriteLine("patient deleted");
+                }
+                       
+                    
+            break;
+
+            case 5:
+
+            running = false;
+            break;
+
+            default:
+            Console.WriteLine("Be Nice");
+            break;  
+
+            
+
+        }
+        
+
+        }
+
+        Console.ReadKey();
+    }
+    
+}
