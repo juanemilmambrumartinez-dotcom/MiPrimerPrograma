@@ -1,0 +1,100 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+namespace PrestamosApp.Model;
+
+public class Lapicero : Material
+{
+    public string Color     { get; set; }
+    public string TipoPunta { get; set; }   
+
+    public Lapicero(string nombre)
+        : base(nombre)
+    {
+        Color     = "negro";
+        TipoPunta = "media";
+    }
+
+    public Lapicero(string nombre, string color)
+        : base(nombre)
+    {
+        Color     = color;
+        TipoPunta = "media";
+    }
+
+    public Lapicero(int id, string nombre, string descripcion,
+                    bool disponible, string color, string tipoPunta)
+        : base(id, nombre, descripcion, disponible)
+    {
+        Color     = color;
+        TipoPunta = tipoPunta;
+    }
+
+    public override string GetTipo() => "LAPICERO";
+
+    public override string GetDetalles() =>
+        $"Lapicero: {Nombre} | Color: {Color} | Punta: {TipoPunta}";
+}
+
+public class Cuaderno : Material
+{
+    public int    Paginas    { get; set; }
+    public string TipoLineas { get; set; }  
+      public Cuaderno(string nombre)
+        : base(nombre)
+    {
+        Paginas    = 100;
+        TipoLineas = "rayado";
+    }
+
+    public Cuaderno(string nombre, int paginas)
+        : base(nombre)
+    {
+        Paginas    = paginas;
+        TipoLineas = "rayado";
+    }
+
+    public Cuaderno(int id, string nombre, string descripcion,
+                    bool disponible, int paginas, string tipoLineas)
+        : base(id, nombre, descripcion, disponible)
+    {
+        Paginas    = paginas;
+        TipoLineas = tipoLineas;
+    }
+
+    public override string GetTipo() => "CUADERNO";
+
+    public override string GetDetalles() =>
+        $"Cuaderno: {Nombre} | {Paginas} páginas | Tipo: {TipoLineas}";
+}
+
+public class Marcador : Material
+{
+    public string Color        { get; set; }
+    public bool   EsPermanente { get; set; }
+
+    public Marcador(string nombre)
+        : base(nombre)
+    {
+        Color        = "negro";
+        EsPermanente = false;
+    }
+
+    public Marcador(string nombre, string color, bool esPermanente)
+        : base(nombre)
+    {
+        Color        = color;
+        EsPermanente = esPermanente;
+    }
+
+    public Marcador(int id, string nombre, string descripcion,
+                    bool disponible, string color, bool esPermanente)
+        : base(id, nombre, descripcion, disponible)
+    {
+        Color        = color;
+        EsPermanente = esPermanente;
+    }
+
+    public override string GetTipo() => "MARCADOR";
+
+    public override string GetDetalles() =>
+        $"Marcador: {Nombre} | Color: {Color} | {(EsPermanente ? "Permanente" : "Borrable")}";
+}
