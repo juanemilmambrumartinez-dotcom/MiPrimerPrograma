@@ -1,0 +1,114 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+using PrestamosApp.DAL;
+using PrestamosApp.Model;
+
+namespace PrestamosApp.Service;
+
+public class MaterialService
+{
+    private readonly MaterialDAO _dao = new();
+
+    public List<Material> ListarTodos()         => _dao.ObtenerTodos();
+    public List<Material> ListarDisponibles()   => _dao.ObtenerDisponibles();
+    public Material?      BuscarPorId(int id)   => _dao.Buscar(id);
+
+    public List<Material> Buscar(string nombre)               => _dao.Buscar(nombre);
+    public List<Material> Buscar(string tipo, bool disponible) => _dao.Buscar(tipo, disponible);
+
+    public (bool ok, string mensaje) Registrar(Material material)
+    {
+        if (string.IsNullOrWhiteSpace(material.Nombre))
+            return (false, "El nombre del material no puede estar vacío.");
+
+        bool guardado = _dao.Insertar(material);
+        return guardado
+            ? (true,  $"Material \"{material.Nombre}\" registrado correctamente.")
+            : (false, "No se pudo guardar el material. Intenta de nuevo.");
+    }
+
+    public (bool ok, string mensaje) Eliminar(int id)
+    {
+        var material = _dao.Buscar(id);
+        if (material == null)
+            return (false, "Material no encontrado.");
+        if (!material.Disponible)
+            return (false, "No se puede eliminar: el material está prestado actualmente.");
+
+        bool borrado = _dao.Eliminar(id);
+        return borrado
+            ? (true,  "Material eliminado.")
+            : (false, "No se pudo eliminar. Intenta de nuevo.");
+    }
+}
+
+public class UsuarioService
+{
+    private readonly UsuarioDAO _dao = new();
+
+    public List<Usuario> ListarTodos()       => _dao.ObtenerTodos();
+    public Usuario?      BuscarPorId(int id) => _dao.Buscar(id);
+    public List<Usuario> Buscar(string nom)  => _dao.Buscar(nom);
+
+    public (bool ok, string mensaje) Registrar(Usuario usuario)
+    {
+        if (string.IsNullOrWhiteSpace(usuario.Nombre))
+            return (false, "El nombre no puede estar vacío.");
+        if (string.IsNullOrWhiteSpace(usuario.Cedula))
+            return (false, "La cédula no puede estar vacía.");
+
+        bool guardado = _dao.Insertar(usuario);
+        return guardado
+            ? (true,  $"Usuario \"{usuario.Nombre}\" registrado correctamente.")
+            : (false, "No se pudo guardar el usuario. La cédula podría estar duplicada.");
+    }
+
+    public (bool ok, string mensaje) Eliminar(int id)
+    {
+        var u = _dao.Buscar(id);
+        if (u == null) return (false, "Usuario no encontrado.");
+        bool borrado = _dao.Eliminar(id);
+        return borrado ? (true, "Usuario eliminado.") : (false, "No se pudo eliminar.");
+    }
+}
+
+
+public class PrestamoService
+{
+    private readonly PrestamoDAO _dao         = new();
+    private readonly MaterialDAO _materialDAO = new();
+
+    public List<Prestamo> ListarTodos()       => _dao.ObtenerTodos();
+    public List<Prestamo> ListarPendientes()  => _dao.ObtenerPendientes();
+    public List<Prestamo> ListarDeUsuario(int uid) => _dao.ObtenerPorUsuario(uid);
+
+    public (bool ok, string mensaje) CrearPrestamo(Usuario usuario, Material material,
+                                                    string observaciones = "")
+    {
+        if (!material.Disponible)
+            return (false, $"\"{material.Nombre}\" no está disponible para préstamo.");
+
+        var prestamo = new Prestamo(usuario, material, observaciones);
+        bool guardado = _dao.Insertar(prestamo);
+
+        if (guardado)
+        {
+            _materialDAO.ActualizarDisponibilidad(material.Id, false);
+            return (true, $"Prestamo registrado: {usuario.Nombre} tomo \"{material.Nombre}\".");
+        }
+
+        return (false, "No se pudo registrar el prestamo.");
+    }
+
+    public (bool ok, string mensaje) RegistrarDevolucion(int prestamoId)
+    {
+        bool ok = _dao.RegistrarDevolucion(prestamoId);
+        if (!ok) return (false, "Prestamo no encontrado o ya fue devuelto.");
+
+        var pendientes = _dao.ObtenerTodos();
+        var p = pendientes.FirstOrDefault(x => x.Id == prestamoId);
+        if (p != null)
+            _materialDAO.ActualizarDisponibilidad(p.Material.Id, true);
+
+        return (true, "Devolucion registrada correctamente. ✓");
+    }
+}
