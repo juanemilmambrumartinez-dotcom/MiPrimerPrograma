@@ -1,0 +1,29 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+using Microsoft.Data.SqlClient;
+
+namespace PrestamosApp.DAL;
+
+public static class ConexionDB
+{
+    private const string CadenaConexion =
+    "Server=DESKTOP-HLROTNA\\SQLEXPRESS;Database=PrestamosDB;Trusted_Connection=True;TrustServerCertificate=True";
+    public static SqlConnection ObtenerConexion()
+    {
+        var conexion = new SqlConnection(CadenaConexion);
+        conexion.Open();
+        return conexion;
+    }
+
+    public static bool ProbarConexion()
+    {
+        try
+        {
+            using var con = ObtenerConexion();
+            return con.State == System.Data.ConnectionState.Open;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}
