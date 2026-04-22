@@ -1,0 +1,94 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+namespace PrestamosApp.Model;
+
+public class Usuario
+{
+    public int    Id       { get; set; }
+    public string Nombre   { get; set; }
+    public string Cedula   { get; set; }
+    public string Telefono { get; set; }
+    public bool   Activo   { get; set; }
+    public Usuario(string nombre, string cedula)
+    {
+        Nombre   = nombre;
+        Cedula   = cedula;
+        Telefono = string.Empty;
+        Activo   = true;
+    }
+
+    public Usuario(string nombre, string cedula, string telefono)
+        : this(nombre, cedula)           
+    {
+        Telefono = telefono;
+    }
+
+    public Usuario(int id, string nombre, string cedula,
+                   string telefono, bool activo)
+    {
+        Id       = id;
+        Nombre   = nombre;
+        Cedula   = cedula;
+        Telefono = telefono;
+        Activo   = activo;
+    }
+
+    public override string ToString() =>
+        $"[{Id}] {Nombre} | Cédula: {Cedula} | Tel: {(string.IsNullOrEmpty(Telefono) ? "N/A" : Telefono)}";
+}
+
+public class Prestamo
+{
+    public int       Id              { get; set; }
+    public Usuario   Usuario         { get; set; }
+    public Material  Material        { get; set; }
+    public DateTime  FechaPrestamo   { get; set; }
+    public DateTime? FechaDevolucion { get; set; }
+    public bool      Devuelto        { get; set; }
+    public string    Observaciones   { get; set; }
+
+    public Prestamo(Usuario usuario, Material material)
+    {
+        Usuario       = usuario;
+        Material      = material;
+        FechaPrestamo = DateTime.Now;
+        Devuelto      = false;
+        Observaciones = string.Empty;
+    }
+
+    public Prestamo(Usuario usuario, Material material, string observaciones)
+        : this(usuario, material)
+    {
+        Observaciones = observaciones;
+    }
+    
+    public Prestamo(int id, Usuario usuario, Material material,
+                    DateTime fechaPrestamo, DateTime? fechaDevolucion,
+                    bool devuelto, string observaciones)
+    {
+        Id              = id;
+        Usuario         = usuario;
+        Material        = material;
+        FechaPrestamo   = fechaPrestamo;
+        FechaDevolucion = fechaDevolucion;
+        Devuelto        = devuelto;
+        Observaciones   = observaciones;
+    }
+
+    /// <summary>Registra la devolución del material.</summary>
+    public void RegistrarDevolucion()
+    {
+        Devuelto        = true;
+        FechaDevolucion = DateTime.Now;
+        Material.Disponible = true;
+    }
+
+    public override string ToString()
+    {
+        string estado = Devuelto
+            ? $"Devuelto el {FechaDevolucion:dd/MM/yyyy HH:mm}"
+            : "Pendiente... ";
+
+        return $"Prestamo #{Id} | {Usuario.Nombre} → \"{Material.Nombre}\"\n" +
+               $"  Fecha: {FechaPrestamo:dd/MM/yyyy HH:mm} | {estado}";
+    }
+}
