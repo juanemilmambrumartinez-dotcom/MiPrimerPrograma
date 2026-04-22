@@ -1,0 +1,60 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+namespace PrestamosApp.View;
+
+public static class ConsolaUtil
+{
+    public static void Titulo(string texto)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine($"\n{'═'.ToString().PadRight(50, '═')}");
+        Console.WriteLine($"  {texto}");
+        Console.WriteLine($"{'═'.ToString().PadRight(50, '═')}");
+        Console.ResetColor();
+    }
+
+    public static void Ok(string msg)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"\n   {msg}");
+        Console.ResetColor();
+    }
+
+    public static void Error(string msg)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"\n   {msg}");
+        Console.ResetColor();
+    }
+
+    public static void Info(string msg)
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine($"  {msg}");
+        Console.ResetColor();
+    }
+
+    public static string LeerTexto(string etiqueta)
+    {
+        Console.Write($"  {etiqueta}: ");
+        return Console.ReadLine()?.Trim() ?? "";
+    }
+
+    public static int LeerEntero(string etiqueta)
+    {
+        while (true)
+        {
+            Console.Write($"  {etiqueta}: ");
+            if (int.TryParse(Console.ReadLine(), out int val)) return val;
+            Error("Ingresa un numero valido.");
+        }
+    }
+
+    public static void Pausa()
+    {
+        Console.WriteLine("\n  Presione cualquier tecla para continuar...");
+        Console.ReadKey();
+    }
+
+    public static void Separador() =>
+        Console.WriteLine($"  {'─'.ToString().PadRight(46, '─')}");
+}
