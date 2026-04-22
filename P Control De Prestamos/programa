@@ -1,0 +1,28 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+using PrestamosApp.DAL;
+using PrestamosApp.View;
+
+Console.OutputEncoding = System.Text.Encoding.UTF8;
+Console.Title = "Control de Prestamos de Materiales";
+
+Console.ForegroundColor = ConsoleColor.Cyan;
+Console.WriteLine("\n  Conectando a la base de datos...");
+Console.ResetColor();
+
+if (!ConexionDB.ProbarConexion())
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine("\n  Error: No se pudo conectar a SQL Server.");
+    Console.WriteLine("  Verifica tu cadena de conexión en ConexionDB.cs");
+    Console.ResetColor();
+    Console.ReadKey();
+    return;
+}
+
+Console.ForegroundColor = ConsoleColor.Green;
+Console.WriteLine("  Conexión exitosa.\n");
+Console.ResetColor();
+
+var menu = new Menu();
+menu.MostrarPrincipal();
+Console.ReadKey();
