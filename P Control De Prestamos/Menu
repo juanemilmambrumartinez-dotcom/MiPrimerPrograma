@@ -1,0 +1,357 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+using PrestamosApp.Model;
+using PrestamosApp.Service;
+
+namespace PrestamosApp.View;
+
+using Microsoft.Data.SqlClient;
+
+class Program
+{
+    static void Main()
+    {
+        using SqlConnection con = new SqlConnection("Server=.;Database=master;Trusted_Connection=True;");
+        Console.WriteLine("Conexión creada correctamente");
+    }
+}
+
+public class Menu
+{
+    private readonly MaterialService  _matSvc  = new();
+    private readonly UsuarioService   _uSvc    = new();
+    private readonly PrestamoService  _pSvc    = new();
+
+    public void MostrarPrincipal()
+    {
+        while (true)
+        {
+            Console.Clear();
+            ConsolaUtil.Titulo("CONTROL DE PRESTAMOS DE MATERIALES");
+            Console.WriteLine("  1. Gestionar Materiales");
+            Console.WriteLine("  2. Gestionar Usuarios");
+            Console.WriteLine("  3. Gestionar Préstamos");
+            Console.WriteLine("  4. Reportes");
+            Console.WriteLine("  0. Salir");
+            ConsolaUtil.Separador();
+            Console.Write("  Opcion: ");
+
+            switch (Console.ReadLine()?.Trim())
+            {
+                case "1": MenuMateriales(); break;
+                case "2": MenuUsuarios();   break;
+                case "3": MenuPrestamos();  break;
+                case "4": MenuReportes();   break;
+                case "0":
+                    Console.WriteLine("\n  ¡Gracias Por Usar Nuestro Servicio!\n");
+                    return;
+                default:
+                    ConsolaUtil.Error("Opcion no valida.");
+                    ConsolaUtil.Pausa();
+                    break;
+            }
+        }
+    }
+    private void MenuMateriales()
+    {
+        while (true)
+        {
+            Console.Clear();
+            ConsolaUtil.Titulo("MATERIALES");
+            Console.WriteLine("  1. Ver todos los materiales");
+            Console.WriteLine("  2. Ver disponibles");
+            Console.WriteLine("  3. Buscar material");
+            Console.WriteLine("  4. Registrar nuevo material");
+            Console.WriteLine("  5. Eliminar material");
+            Console.WriteLine("  0. Volver");
+            ConsolaUtil.Separador();
+            Console.Write("  Opcion: ");
+
+            switch (Console.ReadLine()?.Trim())
+            {
+                case "1": ListarMateriales(todos: true);  break;
+                case "2": ListarMateriales(todos: false); break;
+                case "3": BuscarMaterial();               break;
+                case "4": RegistrarMaterial();            break;
+                case "5": EliminarMaterial();             break;
+                case "0": return;
+                default:
+                    ConsolaUtil.Error("Opcion no valida.");
+                    ConsolaUtil.Pausa();
+                    break;
+            }
+        }
+    }
+
+    private void ListarMateriales(bool todos)
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo(todos ? "TODOS LOS MATERIALES" : "MATERIALES DISPONIBLES");
+
+        var lista = todos ? _matSvc.ListarTodos() : _matSvc.ListarDisponibles();
+
+        if (lista.Count == 0)
+        {
+            ConsolaUtil.Info("No hay materiales registrados.");
+        }
+        else
+        {
+            foreach (var m in lista)
+            {
+                Console.ForegroundColor = m.Disponible ? ConsoleColor.White : ConsoleColor.DarkGray;
+                Console.WriteLine($"  {m}");
+                ConsolaUtil.Info(m.GetDetalles());
+                Console.ResetColor();
+            }
+        }
+        ConsolaUtil.Pausa();
+    }
+
+    private void BuscarMaterial()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("BUSCAR MATERIAL");
+        string nombre = ConsolaUtil.LeerTexto("Nombre a buscar");
+        var lista = _matSvc.Buscar(nombre);
+
+        if (lista.Count == 0)
+            ConsolaUtil.Error("No se encontraron materiales.");
+        else
+            foreach (var m in lista)
+                Console.WriteLine($"  {m}");
+
+        ConsolaUtil.Pausa();
+    }
+
+    private void RegistrarMaterial()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("REGISTRAR MATERIAL");
+        Console.WriteLine("  Tipos: LAPICERO | CUADERNO | MARCADOR | OTRO");
+
+        string nombre = ConsolaUtil.LeerTexto("Nombre");
+        string tipo   = ConsolaUtil.LeerTexto("Tipo").ToUpper();
+        string desc   = ConsolaUtil.LeerTexto("Descripción (opcional)");
+
+        Material nuevo = tipo switch
+        {
+            "LAPICERO" => new Lapicero(nombre),
+            "CUADERNO" => new Cuaderno(nombre),
+            "MARCADOR" => new Marcador(nombre),
+            _          => new Lapicero(nombre)
+        };
+        nuevo.Descripcion = desc;
+
+        var (ok, msg) = _matSvc.Registrar(nuevo);
+        if (ok) ConsolaUtil.Ok(msg);
+        else    ConsolaUtil.Error(msg);
+        ConsolaUtil.Pausa();
+    }
+
+    private void EliminarMaterial()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("ELIMINAR MATERIAL");
+        int id = ConsolaUtil.LeerEntero("ID del material a eliminar");
+        var (ok, msg) = _matSvc.Eliminar(id);
+        if (ok) ConsolaUtil.Ok(msg);
+        else    ConsolaUtil.Error(msg);
+        ConsolaUtil.Pausa();
+    }
+
+     private void MenuUsuarios()
+    {
+        while (true)
+        {
+            Console.Clear();
+            ConsolaUtil.Titulo("USUARIOS");
+            Console.WriteLine("  1. Ver todos los usuarios");
+            Console.WriteLine("  2. Buscar usuario");
+            Console.WriteLine("  3. Registrar nuevo usuario");
+            Console.WriteLine("  4. Eliminar usuario");
+            Console.WriteLine("  0. Volver");
+            ConsolaUtil.Separador();
+            Console.Write("  Opcion: ");
+
+            switch (Console.ReadLine()?.Trim())
+            {
+                case "1": ListarUsuarios();   break;
+                case "2": BuscarUsuario();    break;
+                case "3": RegistrarUsuario(); break;
+                case "4": EliminarUsuario();  break;
+                case "0": return;
+                default:
+                    ConsolaUtil.Error("Opcion no valida.");
+                    ConsolaUtil.Pausa();
+                    break;
+            }
+        }
+    }
+
+    private void ListarUsuarios()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("LISTA DE USUARIOS");
+        var lista = _uSvc.ListarTodos();
+        if (lista.Count == 0) ConsolaUtil.Info("No hay usuarios registrados.");
+        else foreach (var u in lista) Console.WriteLine($"  {u}");
+        ConsolaUtil.Pausa();
+    }
+
+    private void BuscarUsuario()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("BUSCAR USUARIO");
+        string nom = ConsolaUtil.LeerTexto("Nombre a buscar");
+        var lista = _uSvc.Buscar(nom);
+        if (lista.Count == 0) ConsolaUtil.Error("No se encontraron usuarios.");
+        else foreach (var u in lista) Console.WriteLine($"  {u}");
+        ConsolaUtil.Pausa();
+    }
+
+    private void RegistrarUsuario()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("REGISTRAR USUARIO");
+        string nombre = ConsolaUtil.LeerTexto("Nombre completo");
+        string cedula = ConsolaUtil.LeerTexto("Cedula");
+        string tel    = ConsolaUtil.LeerTexto("Telefono (opcional)");
+
+        var u = new Usuario(nombre, cedula, tel);
+        var (ok, msg) = _uSvc.Registrar(u);
+        if (ok) ConsolaUtil.Ok(msg);
+        else    ConsolaUtil.Error(msg);
+        ConsolaUtil.Pausa();
+    }
+
+    private void EliminarUsuario()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("DESACTIVAR USUARIO");
+        int id = ConsolaUtil.LeerEntero("ID del usuario");
+        var (ok, msg) = _uSvc.Eliminar(id);
+        if (ok) ConsolaUtil.Ok(msg);
+        else    ConsolaUtil.Error(msg);
+        ConsolaUtil.Pausa();
+    }
+
+    private void MenuPrestamos()
+    {
+        while (true)
+        {
+            Console.Clear();
+            ConsolaUtil.Titulo("PRESTAMOS");
+            Console.WriteLine("  1. Ver préstamos pendientes");
+            Console.WriteLine("  2. Ver todos los préstamos");
+            Console.WriteLine("  3. Registrar nuevo préstamo");
+            Console.WriteLine("  4. Registrar devolución");
+            Console.WriteLine("  0. Volver");
+            ConsolaUtil.Separador();
+            Console.Write("  OpciOn: ");
+
+            switch (Console.ReadLine()?.Trim())
+            {
+                case "1": ListarPrestamos(soloPlendientes: true);  break;
+                case "2": ListarPrestamos(soloPlendientes: false); break;
+                case "3": CrearPrestamo();      break;
+                case "4": RegistrarDevolucion(); break;
+                case "0": return;
+                default:
+                    ConsolaUtil.Error("Opcion no vaida.");
+                    ConsolaUtil.Pausa();
+                    break;
+            }
+        }
+    }
+
+    private void ListarPrestamos(bool soloPlendientes)
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo(soloPlendientes ? "PRESTAMOS PENDIENTES" : "TODOS LOS PRESTAMOS");
+
+        var lista = soloPlendientes ? _pSvc.ListarPendientes() : _pSvc.ListarTodos();
+
+        if (lista.Count == 0)
+            ConsolaUtil.Info("No hay prestamos para mostrar.");
+        else
+            foreach (var p in lista)
+            {
+                Console.ForegroundColor = p.Devuelto ? ConsoleColor.DarkGray : ConsoleColor.White;
+                Console.WriteLine($"\n  {p}");
+                Console.ResetColor();
+            }
+
+        ConsolaUtil.Pausa();
+    }
+
+    private void CrearPrestamo()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("NUEVO PRÉSTAMO");
+
+        var usuarios = _uSvc.ListarTodos();
+        if (usuarios.Count == 0) { ConsolaUtil.Error("No hay usuarios registrados."); ConsolaUtil.Pausa(); return; }
+        Console.WriteLine("  — Usuarios disponibles —");
+        foreach (var u in usuarios) Console.WriteLine($"  {u}");
+
+        int uid = ConsolaUtil.LeerEntero("\n  ID del usuario");
+        var usuario = _uSvc.BuscarPorId(uid);
+        if (usuario == null) { ConsolaUtil.Error("Usuario no encontrado."); ConsolaUtil.Pausa(); return; }
+
+        var materiales = _matSvc.ListarDisponibles();
+        if (materiales.Count == 0) { ConsolaUtil.Error("No hay materiales disponibles."); ConsolaUtil.Pausa(); return; }
+        Console.WriteLine("\n  — Materiales disponibles —");
+        foreach (var m in materiales) Console.WriteLine($"  {m}");
+
+        int mid = ConsolaUtil.LeerEntero("\n  ID del material");
+        var material = _matSvc.BuscarPorId(mid);
+        if (material == null) { ConsolaUtil.Error("Material no encontrado."); ConsolaUtil.Pausa(); return; }
+
+        string obs = ConsolaUtil.LeerTexto("Observaciones (opcional)");
+
+        var (ok, msg) = _pSvc.CrearPrestamo(usuario, material, obs);
+        if (ok) ConsolaUtil.Ok(msg);
+        else    ConsolaUtil.Error(msg);
+        ConsolaUtil.Pausa();
+    }
+
+    private void RegistrarDevolucion()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("REGISTRAR DEVOLUCIÓN");
+
+        var pendientes = _pSvc.ListarPendientes();
+        if (pendientes.Count == 0) { ConsolaUtil.Info("No hay préstamos pendientes."); ConsolaUtil.Pausa(); return; }
+
+        foreach (var p in pendientes) Console.WriteLine($"\n  {p}");
+
+        int id = ConsolaUtil.LeerEntero("\n  ID del préstamo a devolver");
+        var (ok, msg) = _pSvc.RegistrarDevolucion(id);
+        if (ok) ConsolaUtil.Ok(msg);
+        else    ConsolaUtil.Error(msg);
+        ConsolaUtil.Pausa();
+    }
+
+    private void MenuReportes()
+    {
+        Console.Clear();
+        ConsolaUtil.Titulo("REPORTE GENERAL");
+
+        var todos      = _pSvc.ListarTodos();
+        var pendientes = _pSvc.ListarPendientes();
+        var materiales = _matSvc.ListarTodos();
+        var usuarios   = _uSvc.ListarTodos();
+
+        ConsolaUtil.Info($"Total de usuarios:          {usuarios.Count}");
+        ConsolaUtil.Info($"Total de materiales:        {materiales.Count}");
+        ConsolaUtil.Info($"  - Disponibles:            {materiales.Count(m => m.Disponible)}");
+        ConsolaUtil.Info($"  - Prestados:              {materiales.Count(m => !m.Disponible)}");
+        ConsolaUtil.Info($"Total de préstamos:         {todos.Count}");
+        ConsolaUtil.Info($"  - Pendientes devolución:  {pendientes.Count}");
+        ConsolaUtil.Info($"  - Devueltos:              {todos.Count - pendientes.Count}");
+
+        ConsolaUtil.Pausa();
+
+        
+    }
+    
+}
