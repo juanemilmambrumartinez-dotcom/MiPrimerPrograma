@@ -1,0 +1,143 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+using Microsoft.Data.SqlClient;
+using PrestamosApp.Model;
+
+namespace PrestamosApp.DAL;
+
+public class MaterialDAO
+{
+    public List<Material> ObtenerTodos()
+    {
+        var lista = new List<Material>();
+
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, Nombre, Tipo, Descripcion, Disponible FROM Materiales", con);
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+            lista.Add(MapearMaterial(reader));
+
+        return lista;
+    }
+
+    public List<Material> ObtenerDisponibles()
+    {
+        var lista = new List<Material>();
+
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, Nombre, Tipo, Descripcion, Disponible " +
+            "FROM Materiales WHERE Disponible = 1", con);
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+            lista.Add(MapearMaterial(reader));
+
+        return lista;
+    }
+
+    public Material? Buscar(int id)
+    {
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, Nombre, Tipo, Descripcion, Disponible " +
+            "FROM Materiales WHERE Id = @Id", con);
+        cmd.Parameters.AddWithValue("@Id", id);
+        using var reader = cmd.ExecuteReader();
+        return reader.Read() ? MapearMaterial(reader) : null;
+    }
+
+    public List<Material> Buscar(string nombre)
+    {
+        var lista = new List<Material>();
+
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, Nombre, Tipo, Descripcion, Disponible " +
+            "FROM Materiales WHERE Nombre LIKE @Nombre", con);
+        cmd.Parameters.AddWithValue("@Nombre", $"%{nombre}%");
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+            lista.Add(MapearMaterial(reader));
+
+        return lista;
+    }
+
+    public List<Material> Buscar(string tipo, bool soloDisponibles)
+    {
+        var lista = new List<Material>();
+
+        string sql = "SELECT Id, Nombre, Tipo, Descripcion, Disponible " +
+                     "FROM Materiales WHERE Tipo = @Tipo";
+        if (soloDisponibles) sql += " AND Disponible = 1";
+
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(sql, con);
+        cmd.Parameters.AddWithValue("@Tipo", tipo);
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+            lista.Add(MapearMaterial(reader));
+
+        return lista;
+    }
+
+    public bool Insertar(Material material)
+    {
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "INSERT INTO Materiales (Nombre, Tipo, Descripcion, Disponible) " +
+            "VALUES (@Nombre, @Tipo, @Desc, @Disp)", con);
+
+        cmd.Parameters.AddWithValue("@Nombre", material.Nombre);
+        cmd.Parameters.AddWithValue("@Tipo",   material.GetTipo());
+        cmd.Parameters.AddWithValue("@Desc",   material.Descripcion);
+        cmd.Parameters.AddWithValue("@Disp",   material.Disponible);
+
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public bool ActualizarDisponibilidad(int id, bool disponible)
+    {
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "UPDATE Materiales SET Disponible = @Disp WHERE Id = @Id", con);
+        cmd.Parameters.AddWithValue("@Disp", disponible);
+        cmd.Parameters.AddWithValue("@Id",   id);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public bool Eliminar(int id)
+{
+    using var con = ConexionDB.ObtenerConexion();
+
+    using var cmdPrestamos = new SqlCommand(
+        "DELETE FROM Prestamos WHERE MaterialId = @Id", con);
+    cmdPrestamos.Parameters.AddWithValue("@Id", id);
+    cmdPrestamos.ExecuteNonQuery();
+
+    using var cmd = new SqlCommand(
+        "DELETE FROM Materiales WHERE Id = @Id", con);
+    cmd.Parameters.AddWithValue("@Id", id);
+    return cmd.ExecuteNonQuery() > 0;
+}
+
+    private static Material MapearMaterial(SqlDataReader r)
+    {
+        int    id    = r.GetInt32(0);
+        string nom   = r.GetString(1);
+        string tipo  = r.GetString(2);
+        string desc  = r.IsDBNull(3) ? "" : r.GetString(3);
+        bool   disp  = r.GetBoolean(4);
+
+        return tipo switch
+        {
+            "LAPICERO" => new Lapicero(id, nom, desc, disp, "negro", "media"),
+            "CUADERNO" => new Cuaderno(id, nom, desc, disp, 100, "rayado"),
+            "MARCADOR" => new Marcador(id, nom, desc, disp, "negro", false),
+            _          => new Lapicero(id, nom, desc, disp, "negro", "media")
+        };
+    }
+}
