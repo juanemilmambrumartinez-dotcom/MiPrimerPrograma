@@ -1,0 +1,153 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+using Microsoft.Data.SqlClient;
+using PrestamosApp.Model;
+
+namespace PrestamosApp.DAL;
+
+public class UsuarioDAO
+{
+    public List<Usuario> ObtenerTodos()
+    {
+        var lista = new List<Usuario>();
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, Nombre, Cedula, Telefono, Activo FROM Usuarios WHERE Activo = 1", con);
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            lista.Add(new Usuario(r.GetInt32(0), r.GetString(1), r.GetString(2),
+                                  r.IsDBNull(3) ? "" : r.GetString(3), r.GetBoolean(4)));
+        return lista;
+    }
+
+    public Usuario? Buscar(int id)
+    {
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, Nombre, Cedula, Telefono, Activo FROM Usuarios WHERE Id = @Id", con);
+        cmd.Parameters.AddWithValue("@Id", id);
+        using var r = cmd.ExecuteReader();
+        if (!r.Read()) return null;
+        return new Usuario(r.GetInt32(0), r.GetString(1), r.GetString(2),
+                           r.IsDBNull(3) ? "" : r.GetString(3), r.GetBoolean(4));
+    }
+
+    public List<Usuario> Buscar(string nombre)
+    {
+        var lista = new List<Usuario>();
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, Nombre, Cedula, Telefono, Activo FROM Usuarios " +
+            "WHERE Nombre LIKE @Nombre AND Activo = 1", con);
+        cmd.Parameters.AddWithValue("@Nombre", $"%{nombre}%");
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            lista.Add(new Usuario(r.GetInt32(0), r.GetString(1), r.GetString(2),
+                                  r.IsDBNull(3) ? "" : r.GetString(3), r.GetBoolean(4)));
+        return lista;
+    }
+
+    public bool Insertar(Usuario u)
+    {
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "INSERT INTO Usuarios (Nombre, Cedula, Telefono) VALUES (@N, @C, @T)", con);
+        cmd.Parameters.AddWithValue("@N", u.Nombre);
+        cmd.Parameters.AddWithValue("@C", u.Cedula);
+        cmd.Parameters.AddWithValue("@T", (object?)u.Telefono ?? DBNull.Value);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public bool Eliminar(int id)
+{
+    using var con = ConexionDB.ObtenerConexion();
+    using var cmd = new SqlCommand(
+        "DELETE FROM Usuarios WHERE Id = @Id", con);
+    cmd.Parameters.AddWithValue("@Id", id);
+    return cmd.ExecuteNonQuery() > 0;
+}
+}
+
+public class PrestamoDAO
+{
+    private readonly UsuarioDAO  _usuarioDAO  = new();
+    private readonly MaterialDAO _materialDAO = new();
+
+    public List<Prestamo> ObtenerTodos()
+    {
+        var lista = new List<Prestamo>();
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, UsuarioId, MaterialId, FechaPrestamo, " +
+            "FechaDevolucion, Devuelto, Observaciones " +
+            "FROM Prestamos ORDER BY FechaPrestamo DESC", con);
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            lista.Add(MapearPrestamo(r));
+        return lista;
+    }
+
+    public List<Prestamo> ObtenerPendientes()
+    {
+        var lista = new List<Prestamo>();
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, UsuarioId, MaterialId, FechaPrestamo, " +
+            "FechaDevolucion, Devuelto, Observaciones " +
+            "FROM Prestamos WHERE Devuelto = 0", con);
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            lista.Add(MapearPrestamo(r));
+        return lista;
+    }
+
+    public List<Prestamo> ObtenerPorUsuario(int usuarioId)
+    {
+        var lista = new List<Prestamo>();
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "SELECT Id, UsuarioId, MaterialId, FechaPrestamo, " +
+            "FechaDevolucion, Devuelto, Observaciones " +
+            "FROM Prestamos WHERE UsuarioId = @Uid", con);
+        cmd.Parameters.AddWithValue("@Uid", usuarioId);
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            lista.Add(MapearPrestamo(r));
+        return lista;
+    }
+
+    public bool Insertar(Prestamo p)
+    {
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "INSERT INTO Prestamos (UsuarioId, MaterialId, Observaciones) " +
+            "VALUES (@Uid, @Mid, @Obs)", con);
+        cmd.Parameters.AddWithValue("@Uid", p.Usuario.Id);
+        cmd.Parameters.AddWithValue("@Mid", p.Material.Id);
+        cmd.Parameters.AddWithValue("@Obs", (object?)p.Observaciones ?? DBNull.Value);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public bool RegistrarDevolucion(int prestamoId)
+    {
+        using var con = ConexionDB.ObtenerConexion();
+        using var cmd = new SqlCommand(
+            "UPDATE Prestamos SET Devuelto = 1, FechaDevolucion = GETDATE() " +
+            "WHERE Id = @Id", con);
+        cmd.Parameters.AddWithValue("@Id", prestamoId);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    private Prestamo MapearPrestamo(SqlDataReader r)
+    {
+        int       usuarioId  = r.GetInt32(1);
+        int       materialId = r.GetInt32(2);
+        Usuario   usuario    = _usuarioDAO.Buscar(usuarioId)!;
+        Material  material   = _materialDAO.Buscar(materialId)!;
+        DateTime? devFecha   = r.IsDBNull(4) ? null : r.GetDateTime(4);
+        string    obs        = r.IsDBNull(6) ? "" : r.GetString(6);
+
+        return new Prestamo(r.GetInt32(0), usuario, material,
+                            r.GetDateTime(3), devFecha,
+                            r.GetBoolean(5), obs);
+    }
+}
