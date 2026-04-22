@@ -1,0 +1,64 @@
+USE master;
+GO
+
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'PrestamosDB')
+BEGIN
+    CREATE DATABASE PrestamosDB;
+    PRINT 'Base de datos PrestamosDB creada.';
+END
+GO
+
+USE PrestamosDB;
+GO
+
+IF OBJECT_ID('dbo.Usuarios', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Usuarios (
+        Id        INT           IDENTITY(1,1) PRIMARY KEY,
+        Nombre    NVARCHAR(100) NOT NULL,
+        Cedula    NVARCHAR(20)  NOT NULL UNIQUE,
+        Telefono  NVARCHAR(20)  NULL,
+        Activo    BIT           NOT NULL DEFAULT 1,
+        CreadoEn  DATETIME2     NOT NULL DEFAULT GETDATE()
+    );
+    PRINT 'Tabla Usuarios creada.';
+END
+GO
+
+IF OBJECT_ID('dbo.Materiales', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Materiales (
+        Id          INT           IDENTITY(1,1) PRIMARY KEY,
+        Nombre      NVARCHAR(100) NOT NULL,
+        Tipo        NVARCHAR(50)  NOT NULL,
+        Descripcion NVARCHAR(255) NULL,
+        Disponible  BIT           NOT NULL DEFAULT 1,
+        CreadoEn    DATETIME2     NOT NULL DEFAULT GETDATE()
+    );
+    PRINT 'Tabla Materiales creada.';
+END
+GO
+
+IF OBJECT_ID('dbo.Prestamos', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Prestamos (
+        Id               INT           IDENTITY(1,1) PRIMARY KEY,
+        UsuarioId        INT           NOT NULL,
+        MaterialId       INT           NOT NULL,
+        FechaPrestamo    DATETIME2     NOT NULL DEFAULT GETDATE(),
+        FechaDevolucion  DATETIME2     NULL,
+        Devuelto         BIT           NOT NULL DEFAULT 0,
+        Observaciones    NVARCHAR(255) NULL,
+
+        CONSTRAINT FK_Prestamos_Usuarios
+            FOREIGN KEY (UsuarioId)  REFERENCES dbo.Usuarios(Id),
+        CONSTRAINT FK_Prestamos_Materiales
+            FOREIGN KEY (MaterialId) REFERENCES dbo.Materiales(Id)
+    );
+    PRINT 'Tabla Prestamos creada.';
+END
+GO
+
+
+PRINT ' Base de datos lista.';
+GO
