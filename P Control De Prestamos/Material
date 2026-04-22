@@ -1,0 +1,33 @@
+// Juan Emil Mambru Martinez Matricula: 2025-1895
+namespace PrestamosApp.Model;
+
+public abstract class Material
+{
+    public int    Id          { get; set; }
+    public string Nombre      { get; set; }
+    public string Descripcion { get; set; }
+    public bool   Disponible  { get; set; }
+    protected Material(string nombre)
+    {
+        Nombre      = nombre;
+        Descripcion = string.Empty;
+        Disponible  = true;
+    }
+    protected Material(int id, string nombre, string descripcion, bool disponible)
+    {
+        Id          = id;
+        Nombre      = nombre;
+        Descripcion = descripcion;
+        Disponible  = disponible;
+    }
+
+    public abstract string GetTipo();
+
+    public abstract string GetDetalles();
+
+    public override string ToString()
+    {
+        string estado = Disponible ? "Disponible" : "Prestado";
+        return $"[{Id}] {Nombre} ({GetTipo()}) — {estado}";
+    }
+}
