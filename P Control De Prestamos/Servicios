@@ -26,19 +26,17 @@ public class MaterialService
             : (false, "No se pudo guardar el material. Intenta de nuevo.");
     }
 
-    public (bool ok, string mensaje) Eliminar(int id)
-    {
-        var material = _dao.Buscar(id);
-        if (material == null)
-            return (false, "Material no encontrado.");
-        if (!material.Disponible)
-            return (false, "No se puede eliminar: el material está prestado actualmente.");
+   public (bool ok, string mensaje) Eliminar(int id)
+{
+    var material = _dao.Buscar(id);
+    if (material == null)
+        return (false, "Material no encontrado.");
 
-        bool borrado = _dao.Eliminar(id);
-        return borrado
-            ? (true,  "Material eliminado.")
-            : (false, "No se pudo eliminar. Intenta de nuevo.");
-    }
+    bool borrado = _dao.Eliminar(id);
+    return borrado
+        ? (true,  "Material eliminado.")
+        : (false, "No se pudo eliminar. Intenta de nuevo.");
+}
 }
 
 public class UsuarioService
