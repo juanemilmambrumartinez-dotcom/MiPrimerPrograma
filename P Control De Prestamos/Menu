@@ -96,12 +96,11 @@ public class Menu
         else
         {
             foreach (var m in lista)
-            {
-                Console.ForegroundColor = m.Disponible ? ConsoleColor.White : ConsoleColor.DarkGray;
-                Console.WriteLine($"  {m}");
-                ConsolaUtil.Info(m.GetDetalles());
-                Console.ResetColor();
-            }
+{
+            Console.ForegroundColor = m.Disponible ? ConsoleColor.White : ConsoleColor.DarkGray;
+            Console.WriteLine($"  {m}");
+            Console.ResetColor();
+}
         }
         ConsolaUtil.Pausa();
     }
@@ -123,29 +122,36 @@ public class Menu
     }
 
     private void RegistrarMaterial()
+{
+    Console.Clear();
+    ConsolaUtil.Titulo("REGISTRAR MATERIAL");
+
+    string nombre = ConsolaUtil.LeerTexto("Nombre");
+    string desc   = ConsolaUtil.LeerTexto("Descripcion (opcional)");
+
+    Console.WriteLine("  Selecciona el tipo:");
+    Console.WriteLine("  [1] Lapicero");
+    Console.WriteLine("  [2] Cuaderno");
+    Console.WriteLine("  [3] Marcador");
+    Console.WriteLine("  [4] Otro");
+    string opTipo = ConsolaUtil.LeerTexto("Opcion");
+
+   Material nuevo = opTipo switch
     {
-        Console.Clear();
-        ConsolaUtil.Titulo("REGISTRAR MATERIAL");
-        Console.WriteLine("  Tipos: LAPICERO | CUADERNO | MARCADOR | OTRO");
+    "1" => new Lapicero(nombre),
+    "2" => new Cuaderno(nombre),
+    "3" => new Marcador(nombre),
+    "4" => new Otro(nombre),      
+    _   => new Otro(nombre)      
+    };
 
-        string nombre = ConsolaUtil.LeerTexto("Nombre");
-        string tipo   = ConsolaUtil.LeerTexto("Tipo").ToUpper();
-        string desc   = ConsolaUtil.LeerTexto("Descripción (opcional)");
+    nuevo.Descripcion = desc;
 
-        Material nuevo = tipo switch
-        {
-            "LAPICERO" => new Lapicero(nombre),
-            "CUADERNO" => new Cuaderno(nombre),
-            "MARCADOR" => new Marcador(nombre),
-            _          => new Lapicero(nombre)
-        };
-        nuevo.Descripcion = desc;
-
-        var (ok, msg) = _matSvc.Registrar(nuevo);
-        if (ok) ConsolaUtil.Ok(msg);
-        else    ConsolaUtil.Error(msg);
-        ConsolaUtil.Pausa();
-    }
+    var (ok, msg) = _matSvc.Registrar(nuevo);
+    if (ok) ConsolaUtil.Ok(msg);
+    else    ConsolaUtil.Error(msg);
+    ConsolaUtil.Pausa();
+}
 
     private void EliminarMaterial()
     {
